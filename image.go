@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with edgeefy.  If not, see <https://www.gnu.org/licenses/>.
 
-package main
+package edgeefy
 
 import (
 	"flag"
@@ -46,7 +46,7 @@ func main() {
 	// parse command line flags and arguments
 	flag.Parse()
 	// check for required arguments, exit if empty path is provided
-	if *inputFileArgPtr == "" {	// if no input filepath was specified, print message and exit
+	if *inputFileArgPtr == "" { // if no input filepath was specified, print message and exit
 		fmt.Println("No path to input file specified, nothing to do.")
 		return
 	}
@@ -92,7 +92,7 @@ func openImage(path string) [][]GrayPixel {
 // is written by default.
 func writeImage(pixels [][]GrayPixel, path string) {
 	// create grayscale image from the pixel array and write it to disk
-	grayImg := getImageFromArray(pixels)
+	grayImg := GrayImageFromGrayPixels(pixels)
 	outFile, err := os.Create(path)
 	if err != nil {
 		log.Fatal(err)
@@ -114,13 +114,17 @@ func writeImage(pixels [][]GrayPixel, path string) {
 // in the returned array are stored in the way that arr[m][n] refers to the n-th column of the m-th row of the image
 // data.
 func getPixelArray(file io.Reader) ([][]GrayPixel, error) {
-	var pixelArr [][]GrayPixel
-
 	// load the image from given file and determine image bounds
 	img, _, err := image.Decode(file)
 	if err != nil {
 		return nil, err
 	}
+
+	return GrayPixelsFrommImage(img)
+}
+
+func GrayPixelsFrommImage(img image.Image) ([][]GrayPixel, error) {
+	var pixelArr [][]GrayPixel
 	height := img.Bounds().Max.Y
 	width := img.Bounds().Max.X
 
@@ -138,8 +142,8 @@ func getPixelArray(file io.Reader) ([][]GrayPixel, error) {
 	return pixelArr, nil
 }
 
-// getImageFromArray takes pixel information from the given two-dimensional array and creates a corresponding image.
-func getImageFromArray(pixels [][]GrayPixel) *image.Gray {
+// GrayImageFromGrayPixels takes pixel information from the given two-dimensional array and creates a corresponding image.
+func GrayImageFromGrayPixels(pixels [][]GrayPixel) *image.Gray {
 	// construct bounding rectangle and create clear grayscale image
 	bounds := image.Rect(0, 0, len(pixels[0]), len(pixels))
 	img := image.NewGray(bounds)
